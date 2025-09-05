@@ -67,10 +67,10 @@ const Students = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(student =>
-        student.firstName.toLowerCase().includes(query) ||
-        student.lastName.toLowerCase().includes(query) ||
-        student.email.toLowerCase().includes(query) ||
-        student.gradeLevel.toString().includes(query)
+(student.first_name_c || student.firstName || '').toLowerCase().includes(query) ||
+        (student.last_name_c || student.lastName || '').toLowerCase().includes(query) ||
+        (student.email_c || student.email || '').toLowerCase().includes(query) ||
+        (student.grade_level_c || student.gradeLevel || '').toString().includes(query)
       );
     }
 
@@ -79,21 +79,33 @@ const Students = () => {
       let aValue, bValue;
 
       switch (sortField) {
-        case "name":
-          aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
-          bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+case "name":
+          aValue = `${a.first_name_c || a.firstName} ${a.last_name_c || a.lastName}`.toLowerCase();
+          bValue = `${b.first_name_c || b.firstName} ${b.last_name_c || b.lastName}`.toLowerCase();
           break;
         case "gradeAverage":
-          const aGrades = grades.filter(g => g.studentId === a.Id);
-          const bGrades = grades.filter(g => g.studentId === b.Id);
-          aValue = aGrades.length > 0 ? aGrades.reduce((sum, g) => sum + g.score, 0) / aGrades.length : 0;
-          bValue = bGrades.length > 0 ? bGrades.reduce((sum, g) => sum + g.score, 0) / bGrades.length : 0;
+const aGrades = grades.filter(g => {
+            const gradeStudentId = g.student_id_c?.Id || g.student_id_c || g.studentId;
+            return gradeStudentId === a.Id;
+          });
+          const bGrades = grades.filter(g => {
+            const gradeStudentId = g.student_id_c?.Id || g.student_id_c || g.studentId;
+            return gradeStudentId === b.Id;
+          });
+          aValue = aGrades.length > 0 ? aGrades.reduce((sum, g) => sum + (g.score_c || g.score), 0) / aGrades.length : 0;
+          bValue = bGrades.length > 0 ? bGrades.reduce((sum, g) => sum + (g.score_c || g.score), 0) / bGrades.length : 0;
           break;
         case "attendance":
-          const aAttendance = attendance.filter(att => att.studentId === a.Id);
-          const bAttendance = attendance.filter(att => att.studentId === b.Id);
-          const aPresent = aAttendance.filter(att => att.status === "present").length;
-          const bPresent = bAttendance.filter(att => att.status === "present").length;
+const aAttendance = attendance.filter(att => {
+            const attendanceStudentId = att.student_id_c?.Id || att.student_id_c || att.studentId;
+            return attendanceStudentId === a.Id;
+          });
+          const bAttendance = attendance.filter(att => {
+            const attendanceStudentId = att.student_id_c?.Id || att.student_id_c || att.studentId;
+            return attendanceStudentId === b.Id;
+          });
+          const aPresent = aAttendance.filter(att => (att.status_c || att.status) === "present").length;
+          const bPresent = bAttendance.filter(att => (att.status_c || att.status) === "present").length;
           aValue = aAttendance.length > 0 ? (aPresent / aAttendance.length) * 100 : 0;
           bValue = bAttendance.length > 0 ? (bPresent / bAttendance.length) * 100 : 0;
           break;
@@ -146,8 +158,15 @@ const Students = () => {
 
   const handleSaveStudent = async (studentData) => {
     try {
-      if (modalMode === "edit") {
-        await studentsService.update(selectedStudent.Id, studentData);
+if (modalMode === "edit") {
+        await studentsService.update(selectedStudent.Id, {
+          first_name_c: studentData.firstName,
+          last_name_c: studentData.lastName,
+          email_c: studentData.email,
+          grade_level_c: studentData.gradeLevel,
+          status_c: studentData.status,
+          enrollment_date_c: studentData.enrollmentDate
+        });
       } else {
         await studentsService.create(studentData);
       }

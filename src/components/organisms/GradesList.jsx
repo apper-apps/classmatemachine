@@ -44,7 +44,10 @@ const GradesList = ({
   });
 
   const getAssignmentGrades = (assignmentId) => {
-    return grades.filter(grade => grade.assignmentId === assignmentId);
+return grades.filter(grade => {
+      const gradeAssignmentId = grade.assignment_id_c?.Id || grade.assignment_id_c || grade.assignmentId;
+      return gradeAssignmentId === assignmentId;
+    });
   };
 
   if (assignments.length === 0) {
@@ -154,24 +157,24 @@ const GradesList = ({
                   <tr key={assignment.Id} className="hover:bg-slate-50">
                     <td className="py-4 px-4">
                       <div>
-                        <p className="font-medium text-slate-900">{assignment.title}</p>
-                        {assignment.description && (
+<p className="font-medium text-slate-900">{assignment.title_c || assignment.title || assignment.Name}</p>
+                        {(assignment.description_c || assignment.description) && (
                           <p className="text-sm text-slate-500 mt-1 truncate max-w-xs">
-                            {assignment.description}
+                            {assignment.description_c || assignment.description}
                           </p>
                         )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {assignment.category}
+<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {assignment.category_c || assignment.category}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-center text-sm text-slate-900">
-                      {format(new Date(assignment.dueDate), "MMM dd, yyyy")}
+{format(new Date(assignment.due_date_c || assignment.dueDate), "MMM dd, yyyy")}
                     </td>
                     <td className="py-4 px-4 text-center text-sm font-medium text-slate-900">
-                      {assignment.totalPoints}
+{assignment.total_points_c || assignment.totalPoints}
                     </td>
                     <td className="py-4 px-4 text-center">
                       <span className="text-sm text-slate-600">

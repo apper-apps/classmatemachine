@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import SearchBar from "@/components/molecules/SearchBar";
-
+import { AuthContext } from "../../App";
 const Header = ({ 
   title, 
   subtitle, 
@@ -12,6 +12,13 @@ const Header = ({
   showSearch = false,
   actions = []
 }) => {
+  const { logout } = useContext(AuthContext);
+
+  const handleLogout = async () => {
+    if (confirm('Are you sure you want to logout?')) {
+      await logout();
+    }
+  };
   return (
     <header className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-4">
       <div className="flex items-center justify-between">
@@ -49,7 +56,7 @@ const Header = ({
           )}
 
           {/* Actions */}
-          {actions.map((action, index) => (
+{actions.map((action, index) => (
             <Button
               key={index}
               onClick={action.onClick}
@@ -66,6 +73,19 @@ const Header = ({
               </span>
             </Button>
           ))}
+          
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            size="default"
+            className="ml-2"
+          >
+            <ApperIcon name="LogOut" size={16} className="mr-2" />
+            <span className="hidden sm:inline">Logout</span>
+            <span className="sm:hidden">
+              <ApperIcon name="LogOut" size={16} />
+            </span>
+          </Button>
         </div>
       </div>
 

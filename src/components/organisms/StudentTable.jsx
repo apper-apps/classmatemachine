@@ -20,9 +20,14 @@ const StudentTable = ({
   onSort
 }) => {
   const getStudentStats = (studentId) => {
-    const studentGrades = grades.filter(grade => grade.studentId === studentId);
-    const studentAttendance = attendance.filter(record => record.studentId === studentId);
-    
+const studentGrades = grades.filter(grade => {
+      const gradeStudentId = grade.student_id_c?.Id || grade.student_id_c || grade.studentId;
+      return gradeStudentId === studentId;
+    });
+    const studentAttendance = attendance.filter(record => {
+      const attendanceStudentId = record.student_id_c?.Id || record.student_id_c || record.studentId;
+      return attendanceStudentId === studentId;
+    });
     const gradeAverage = calculateGradeAverage(studentGrades);
     const attendancePercentage = calculateAttendancePercentage(studentAttendance);
     
@@ -89,8 +94,12 @@ const StudentTable = ({
           </thead>
           <tbody className="bg-white divide-y divide-slate-200">
             {students.map((student) => {
-              const { gradeAverage, attendancePercentage } = getStudentStats(student.Id);
-              
+const { gradeAverage, attendancePercentage } = getStudentStats(student.Id);
+              const firstName = student.first_name_c || student.firstName || '';
+              const lastName = student.last_name_c || student.lastName || '';
+              const email = student.email_c || student.email || '';
+              const gradeLevel = student.grade_level_c || student.gradeLevel || '';
+              const status = student.status_c || student.status || 'active';
               return (
                 <tr 
                   key={student.Id} 
@@ -102,23 +111,23 @@ const StudentTable = ({
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
-                            {student.firstName?.[0]}{student.lastName?.[0]}
+{firstName?.[0]}{lastName?.[0]}
                           </span>
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-slate-900">
-                          {student.firstName} {student.lastName}
+<div className="text-sm font-medium text-slate-900">
+                          {firstName} {lastName}
                         </div>
-                        <div className="text-sm text-slate-500">{student.email}</div>
+                        <div className="text-sm text-slate-500">{email}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                    Grade {student.gradeLevel}
+Grade {gradeLevel}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusBadge status={student.status} />
+<StatusBadge status={status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {gradeAverage > 0 ? (

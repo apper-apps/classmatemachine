@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
-import { format, addWeeks, subWeeks } from "date-fns";
+import { addWeeks, format, subWeeks } from "date-fns";
 import { toast } from "react-toastify";
-import Header from "@/components/organisms/Header";
-import AttendanceGrid from "@/components/organisms/AttendanceGrid";
-import Loading from "@/components/ui/Loading";
-import Error from "@/components/ui/Error";
-import Empty from "@/components/ui/Empty";
-import Button from "@/components/atoms/Button";
-import ApperIcon from "@/components/ApperIcon";
 import { studentsService } from "@/services/api/studentsService";
 import { attendanceService } from "@/services/api/attendanceService";
+import ApperIcon from "@/components/ApperIcon";
+import Header from "@/components/organisms/Header";
+import AttendanceGrid from "@/components/organisms/AttendanceGrid";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
+import Button from "@/components/atoms/Button";
 
 const Attendance = () => {
   const { onMobileMenuToggle } = useOutletContext();
@@ -44,15 +44,17 @@ const Attendance = () => {
     }
   };
 
-  const handleUpdateAttendance = async (studentId, date, status) => {
+const handleUpdateAttendance = async (studentId, date, status) => {
     try {
       const updatedRecord = await attendanceService.markAttendance(studentId, date, status);
       
       // Update local state
       setAttendance(prev => {
-        const existingIndex = prev.findIndex(record => 
-          record.studentId === studentId && record.date === date
-        );
+        const existingIndex = prev.findIndex(record => {
+          const recordStudentId = record.student_id_c?.Id || record.student_id_c || record.studentId;
+          const recordDate = record.date_c || record.date;
+          return recordStudentId === studentId && recordDate === date;
+        });
         
         if (existingIndex !== -1) {
           const updated = [...prev];
@@ -77,12 +79,12 @@ const Attendance = () => {
 
   const handleTodayAttendance = () => {
     const today = format(new Date(), "yyyy-MM-dd");
-    const todayRecords = attendance.filter(record => record.date === today);
+const todayRecords = attendance.filter(record => (record.date_c || record.date) === today);
     
     if (todayRecords.length === 0) {
       toast.info("No attendance recorded for today yet. Use the grid below to mark attendance.");
     } else {
-      const present = todayRecords.filter(r => r.status === "present").length;
+const present = todayRecords.filter(r => (r.status_c || r.status) === "present").length;
       const total = students.length;
       toast.success(`Today: ${present}/${total} students present`);
     }

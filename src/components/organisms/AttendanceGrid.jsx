@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { format, startOfWeek, addDays } from "date-fns";
+import { addDays, format, startOfWeek } from "date-fns";
 import { toast } from "react-toastify";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import { cn } from "@/utils/cn";
 import ApperIcon from "@/components/ApperIcon";
-import Button from "@/components/atoms/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import StatusBadge from "@/components/molecules/StatusBadge";
+import Attendance from "@/components/pages/Attendance";
+import Button from "@/components/atoms/Button";
 
 const AttendanceGrid = ({ 
   students = [], 
@@ -18,15 +19,17 @@ const AttendanceGrid = ({
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
 
-  const getAttendanceStatus = (studentId, date) => {
+const getAttendanceStatus = (studentId, date) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const record = attendance.find(r => 
-      r.studentId === studentId && r.date === dateStr
-    );
-    return record?.status || "unmarked";
+    const record = attendance.find(r => {
+      const recordStudentId = r.student_id_c?.Id || r.student_id_c || r.studentId;
+      const recordDate = r.date_c || r.date;
+      return recordStudentId === studentId && recordDate === dateStr;
+    });
+    return record ? (record.status_c || record.status) : "unmarked";
   };
 
-  const handleStatusChange = async (studentId, date, status) => {
+const handleStatusChange = async (studentId, date, status) => {
     setIsUpdating(true);
     try {
       const dateStr = format(date, "yyyy-MM-dd");
@@ -108,15 +111,15 @@ const AttendanceGrid = ({
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
                         <span className="text-xs font-medium text-white">
-                          {student.firstName?.[0]}{student.lastName?.[0]}
+{(student.first_name_c || student.firstName)?.[0]}{(student.last_name_c || student.lastName)?.[0]}
                         </span>
                       </div>
                       <div>
                         <p className="font-medium text-slate-900 text-sm">
-                          {student.firstName} {student.lastName}
+{(student.first_name_c || student.firstName)} {(student.last_name_c || student.lastName)}
                         </p>
                         <p className="text-xs text-slate-500">
-                          Grade {student.gradeLevel}
+                          Grade {student.grade_level_c || student.gradeLevel}
                         </p>
                       </div>
                     </div>

@@ -84,29 +84,32 @@ const Dashboard = () => {
 
   // Calculate dashboard statistics
   const totalStudents = students.length;
-  const activeStudents = students.filter(s => s.status === "active").length;
+const activeStudents = students.filter(s => (s.status_c || s.status) === "active").length;
   const totalAssignments = assignments.length;
   const classGradeAverage = calculateGradeAverage(grades);
-  
   const todayStats = getTodayAttendanceStats(students, attendance);
   
   // Recent activity - latest grades and attendance
-  const recentGrades = grades
-    .sort((a, b) => new Date(b.submittedDate) - new Date(a.submittedDate))
+const recentGrades = grades
+    .sort((a, b) => new Date(b.submitted_date_c || b.submittedDate) - new Date(a.submitted_date_c || a.submittedDate))
     .slice(0, 5);
 
   const recentAttendance = attendance
-    .filter(record => record.status !== "present")
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+.filter(record => (record.status_c || record.status) !== "present")
+    .sort((a, b) => new Date(b.date_c || b.date) - new Date(a.date_c || a.date))
     .slice(0, 5);
 
-  const getStudentName = (studentId) => {
-    const student = students.find(s => s.Id === studentId);
+const getStudentName = (studentId) => {
+    // Handle lookup field format
+    const actualStudentId = studentId?.Id || studentId;
+    const student = students.find(s => s.Id === actualStudentId);
     return student ? `${student.firstName} ${student.lastName}` : "Unknown";
   };
 
-  const getAssignmentName = (assignmentId) => {
-    const assignment = assignments.find(a => a.Id === assignmentId);
+const getAssignmentName = (assignmentId) => {
+    // Handle lookup field format
+    const actualAssignmentId = assignmentId?.Id || assignmentId;
+    const assignment = assignments.find(a => a.Id === actualAssignmentId);
     return assignment ? assignment.title : "Unknown Assignment";
   };
 
@@ -173,27 +176,34 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {recentGrades.map((grade) => (
-                      <div key={grade.Id} className="flex items-center justify-between py-2">
-                        <div className="flex-1">
-                          <p className="font-medium text-slate-900 text-sm">
-                            {getStudentName(grade.studentId)}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {getAssignmentName(grade.assignmentId)}
-                          </p>
+{recentGrades.map((grade) => {
+                      const score = grade.score_c || grade.score;
+                      const studentId = grade.student_id_c || grade.studentId;
+                      const assignmentId = grade.assignment_id_c || grade.assignmentId;
+                      
+                      return (
+                        <div key={grade.Id} className="flex items-center justify-between py-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900 text-sm">
+                              {getStudentName(studentId)}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {getAssignmentName(assignmentId)}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium text-slate-900">
+                              {score}%
+                            </span>
+                            <span className={`w-2 h-2 rounded-full ${
+                              score >= 90 ? "bg-success" :
+                              score >= 80 ? "bg-blue-500" :
+                              score >= 70 ? "bg-warning" : "bg-error"
+                            }`} />
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-slate-900">
-                            {grade.score}%
-                          </span>
-                          <span className={`w-2 h-2 rounded-full ${
-                            grade.score >= 90 ? "bg-success" :
-                            grade.score >= 80 ? "bg-blue-500" :
-                            grade.score >= 70 ? "bg-warning" : "bg-error"
-                          }`} />
-                        </div>
-                      </div>
+                      );
+                    })}
                     ))}
                   </div>
                 )}
@@ -216,20 +226,27 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {recentAttendance.map((record) => (
-                      <div key={record.Id} className="flex items-center justify-between py-2">
-                        <div className="flex-1">
-                          <p className="font-medium text-slate-900 text-sm">
-                            {getStudentName(record.studentId)}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {format(new Date(record.date), "MMM dd, yyyy")}
-                          </p>
+{recentAttendance.map((record) => {
+                      const studentId = record.student_id_c || record.studentId;
+                      const date = record.date_c || record.date;
+                      const status = record.status_c || record.status;
+                      
+                      return (
+                        <div key={record.Id} className="flex items-center justify-between py-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-slate-900 text-sm">
+                              {getStudentName(studentId)}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {format(new Date(date), "MMM dd, yyyy")}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <StatusBadge status={status} />
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <StatusBadge status={record.status} />
-                        </div>
-                      </div>
+                      );
+                    })}
                     ))}
                   </div>
                 )}
