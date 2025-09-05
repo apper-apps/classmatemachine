@@ -201,10 +201,9 @@ const getAssignmentName = (assignmentId) => {
                               score >= 70 ? "bg-warning" : "bg-error"
                             }`} />
                           </div>
-                        </div>
+</div>
                       );
                     })}
-                    ))}
                   </div>
                 )}
               </CardContent>
