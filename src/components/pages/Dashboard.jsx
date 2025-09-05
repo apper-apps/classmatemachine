@@ -245,8 +245,7 @@ const getAssignmentName = (assignmentId) => {
                           </div>
                         </div>
                       );
-                    })}
-                    ))}
+})}
                   </div>
                 )}
               </CardContent>
